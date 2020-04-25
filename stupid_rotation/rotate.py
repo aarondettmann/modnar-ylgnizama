@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def rotate_points_2D(points, angle):
     """Rotate points using complex numbers"""
 
-    # Number representing the rotation
+    # Encode the rotation operation
     z = complex(m.cos(angle), m.sin(angle))
 
     points_rot = []
