@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; PyBay 2017 Keynote  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyBay 2017 Keynote  documentation" href="index.html"/>
+        <link rel="next" title="Two Simple Examples" href="simple_examples.html"/>
+        <link rel="prev" title="Raymond Hettinger Keynote" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyBay 2017 Keynote
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                August 12, 2017
+              </div>
+            
+          
+
+          
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="intro.html#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#our-goal">Our Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#why-concurrency">Why Concurrency?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#martelli-model-of-scaleability">Martelli Model of Scaleability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#global-interpreter-lock">Global Interpreter Lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#threads-vs-processes">Threads vs Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#threads-vs-async">Threads vs Async</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#threads">Threads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#async">Async</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#comparison">Comparison</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simple_examples.html">Two Simple Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="threading.html">Threading Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">Multi-processing Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="combo.html">Combining Threading and Forking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async_examples.html">Async Example</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyBay 2017 Keynote</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="intro.html#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="our-goal">
+<h2>Our Goal<a class="headerlink" href="intro.html#our-goal" title="Permalink to this headline">¶</a></h2>
+<p>Walk through two examples of threading and multiprocessing to
+illustrate rules and best practices for taking advantage of
+concurrency.</p>
+</div>
+<div class="section" id="why-concurrency">
+<h2>Why Concurrency?<a class="headerlink" href="intro.html#why-concurrency" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Improve perceived responsiveness</li>
+<li>Improve speed</li>
+<li>Because that is how the real world works</li>
+</ol>
+</div>
+<div class="section" id="martelli-model-of-scaleability">
+<h2>Martelli Model of Scaleability<a class="headerlink" href="intro.html#martelli-model-of-scaleability" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>1 core: Single thread and single process</li>
+<li>2-8 cores:  Multiple threads and multiple processes</li>
+<li>9+ cores: Distributed processing</li>
+</ul>
+<p>Martelli&#8217;s observation:  As time goes on, the second category
+becomes less common and relevant.  Single cores become more
+powerful.  Big datasets grow ever larger.</p>
+</div>
+<div class="section" id="global-interpreter-lock">
+<h2>Global Interpreter Lock<a class="headerlink" href="intro.html#global-interpreter-lock" title="Permalink to this headline">¶</a></h2>
+<p>CPython has a lock for its internal shared global state.</p>
+<p>The unfortunate effect of the GIL is that no more than
+one thread can run at a time.</p>
+<p>For I/O bound applications, the GIL doesn&#8217;t present much of
+an issue.  For CPU bound applications, using threading
+makes the application speed worse.  Accordingly, that drives
+us to multi-processing to gain more CPU cycles.</p>
+</div>
+<div class="section" id="threads-vs-processes">
+<h2>Threads vs Processes<a class="headerlink" href="intro.html#threads-vs-processes" title="Permalink to this headline">¶</a></h2>
+<p>&#8220;Your weakness is your strength and your strength is your weakness&#8221;.</p>
+<p>The strength of threads is shared state.  The weakness of threads
+is shared state (managing race conditions).</p>
+<p>The strength of processes is their independence from one another.
+The weakness of processes is lack of communication (hence the
+need for IPC and object pickling and other overhead).</p>
+</div>
+<div class="section" id="threads-vs-async">
+<h2>Threads vs Async<a class="headerlink" href="intro.html#threads-vs-async" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="threads">
+<h3>Threads<a class="headerlink" href="intro.html#threads" title="Permalink to this headline">¶</a></h3>
+<p>Threads switch preemptively.  This is convenient because you don&#8217;t
+need to add explicit code to cause a task switch.</p>
+<p>The cost of this convenience is that you have to assume a switch
+can happen at any time.  Accordingly, critical sections have to
+be guarded with locks.</p>
+<p>The limit on threads is total CPU power minus the cost of task
+switches and synchronization overhead.</p>
+</div>
+<div class="section" id="async">
+<h3>Async<a class="headerlink" href="intro.html#async" title="Permalink to this headline">¶</a></h3>
+<p>Async switches cooperatively, so you do need to add explicit
+code &#8220;yield&#8221; or &#8220;await&#8221; to cause a task switch.</p>
+<p>Now you control when task switches occur, so locks and other
+synchronization are no longer needed.</p>
+<p>Also, the cost task switches is very low.  Calling a pure
+Python function has more overhead than restarting a
+generator or awaitable.</p>
+<p>This means that async is very cheap.</p>
+<p>In return, you&#8217;ll need a non-blocking version of just about
+everything you do.  Accordingly, the async world has a huge
+ecosystem of support tools.  This increases the learning curve.</p>
+</div>
+<div class="section" id="comparison">
+<h3>Comparison<a class="headerlink" href="intro.html#comparison" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Async maximizes CPU utilization because it has less
+overhead than threads.</li>
+<li>Threading typically works with existing code and tools
+as long as locks are added around critical sections.</li>
+<li>For complex systems, async is <em>much</em> easier to get
+right than threads with locks.</li>
+<li>Threads require very little tooling (locks and queues).</li>
+<li>Async needs a great deal of tooling (futures, event loops,
+and non-blocking versions of just about everything).</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="simple_examples.html" class="btn btn-neutral float-right" title="Two Simple Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Raymond Hettinger Keynote" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Raymond Hettinger.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

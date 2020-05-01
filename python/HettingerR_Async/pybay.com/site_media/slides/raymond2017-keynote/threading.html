@@ -1,0 +1,806 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Threading Example &mdash; PyBay 2017 Keynote  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyBay 2017 Keynote  documentation" href="index.html"/>
+        <link rel="next" title="Multi-processing Example" href="process.html"/>
+        <link rel="prev" title="Two Simple Examples" href="simple_examples.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyBay 2017 Keynote
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                August 12, 2017
+              </div>
+            
+          
+
+          
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple_examples.html">Two Simple Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="threading.html#">Threading Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#scripting-style">Scripting style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#function-style">Function style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#multi-threading-is-easy">Multi-threading is easy!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#testing-proves-the-code-is-correct">Testing proves the code is correct!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#can-you-spot-the-race-conditions">Can you spot the race conditions?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#fuzzing">Fuzzing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#david-baron-at-mozillas-san-francisco-office">David Baron at Mozilla’s San Francisco Office</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#more-careful-threading-with-queues">More Careful Threading with Queues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="threading.html#applying-all-the-rules">Applying all the rules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#cleaned-up-code-without-fuzzing">Cleaned-up code without fuzzing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#careful-threading-with-locks">Careful Threading with locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#id1">Cleaned-up code without fuzzing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#notes-on-locks">Notes on Locks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threading.html#dining-philosophers">Dining Philosophers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">Multi-processing Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="combo.html">Combining Threading and Forking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async_examples.html">Async Example</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyBay 2017 Keynote</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Threading Example</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="threading-example">
+<h1>Threading Example<a class="headerlink" href="threading.html#threading-example" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="scripting-style">
+<h2>Scripting style<a class="headerlink" href="threading.html#scripting-style" title="Permalink to this headline">¶</a></h2>
+<p>Start with working code that is clear, simple, and runs top to bottom.
+This is easy to develop and test incrementally.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That gives us the obvious output:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Starting</span> <span class="n">up</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">1</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">2</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">3</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">4</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">5</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">6</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">7</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">8</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">9</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">10</span>
+<span class="o">---------------</span>
+<span class="n">Finishing</span> <span class="n">up</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Get your app tested and debugged in a singled threaded mode
+first before you start threading.  Threading NEVER makes debugging easier.</p>
+</div>
+</div>
+<div class="section" id="function-style">
+<h2>Function style<a class="headerlink" href="threading.html#function-style" title="Permalink to this headline">¶</a></h2>
+<p>A next step in development is to factor re-usable code into
+functions.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+
+    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">worker</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multi-threading-is-easy">
+<h2>Multi-threading is easy!<a class="headerlink" href="threading.html#multi-threading-is-easy" title="Permalink to this headline">¶</a></h2>
+<p>It is just a matter of launching a few worker threads.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+
+    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing-proves-the-code-is-correct">
+<h2>Testing proves the code is correct!<a class="headerlink" href="threading.html#testing-proves-the-code-is-correct" title="Permalink to this headline">¶</a></h2>
+<p>A simple test run compares perfectly to the original output:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3.6 threading_multi1.py
+Starting up
+The count is 1
+---------------
+The count is 2
+---------------
+The count is 3
+---------------
+The count is 4
+---------------
+The count is 5
+---------------
+The count is 6
+---------------
+The count is 7
+---------------
+The count is 8
+---------------
+The count is 9
+---------------
+The count is 10
+---------------
+Finishing up
+</pre></div>
+</div>
+</div>
+<div class="section" id="can-you-spot-the-race-conditions">
+<h2>Can you spot the race conditions?<a class="headerlink" href="threading.html#can-you-spot-the-race-conditions" title="Permalink to this headline">¶</a></h2>
+<p>Most people spot the &#8220;counter increment&#8221; race condition,
+but most don&#8217;t immediately see the &#8220;print function&#8221;
+race condition.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Testing cannot prove the absence of errors.  It is still
+useful, don&#8217;t rely on it.  Many interest racing conditions
+don&#8217;t reveal themselves in test environments.</p>
+</div>
+<p>Why didn&#8217;t testing reveal the flaws?</p>
+<p>What can we do to improve the effectiveness of testing?</p>
+</div>
+<div class="section" id="fuzzing">
+<h2>Fuzzing<a class="headerlink" href="threading.html#fuzzing" title="Permalink to this headline">¶</a></h2>
+<p>Fuzzing is a technique for amplifying race conditions.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+
+<span class="c1">##########################################################################################</span>
+<span class="c1"># Fuzzing is a technique for amplifying race condition errors to make them more visible</span>
+
+<span class="n">FUZZ</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">def</span> <span class="nf">fuzz</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">FUZZ</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="n">oldcnt</span> <span class="o">=</span> <span class="n">counter</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">oldcnt</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+<span class="n">fuzz</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+<span class="n">fuzz</span><span class="p">()</span>
+
+</pre></div>
+</div>
+<p>This technique is limited to relatively small blocks of code
+and is imperfect in that is can&#8217;t prove the absence of errors.</p>
+<p>Still, fuzzed tests do reveal the presence of errors:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Starting</span> <span class="n">up</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">1</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">2</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">2</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">2</span>
+
+
+<span class="o">---------------</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">3</span>
+<span class="o">---------------</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">4</span>
+<span class="o">---------------</span>
+<span class="o">---------------</span><span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">4</span>
+
+
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">5</span><span class="o">------------------------------</span>
+<span class="n">Finishing</span> <span class="n">up</span>
+
+
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">5</span>
+<span class="o">------------------------------</span>
+
+
+
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">6</span><span class="o">---------------</span>
+<span class="o">---------------</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="david-baron-at-mozillas-san-francisco-office">
+<h2>David Baron at Mozilla’s San Francisco Office<a class="headerlink" href="threading.html#david-baron-at-mozillas-san-francisco-office" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/thistall.jpg" src="_images/thistall.jpg" />
+</div>
+<div class="section" id="more-careful-threading-with-queues">
+<h2>More Careful Threading with Queues<a class="headerlink" href="threading.html#more-careful-threading-with-queues" title="Permalink to this headline">¶</a></h2>
+<p>Interestingly, the rules for threading are just for computing
+and programming.  The physical world is full of concurrency as
+well.  Many of these techniques has physical analogs that
+are useful for managing people and projects.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1000</p>
+<p>ALL shared resources SHALL be run in EXACTLY ONE thread.
+ALL communication with that thread SHALL be done using an atomic message queue:
+typically the Queue module, email, message queues like RabbitMQ or ZeroMQ,
+interesting you can communicate via a database as well.</p>
+<p>Resources that need this technique:  global variables, user input, output devices,
+files, sockets, etc.</p>
+<p class="last">Some resources that already have locks inside (thread-safe):  logging module,
+decimal module (thread local variables), databases (reader locks and writer locks),
+email (this is an atomic message queue).</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1001</p>
+<p class="last">One category of sequencing problems is to make sure that step A
+and step B happen sequentially.  The solution is to put both in
+the same thread where all actions proceed sequentially.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1002</p>
+<p class="last">To implement a &#8220;barrier&#8221; that waits for parallel threads to complete,
+just join() all of the threads.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1003</p>
+<p class="last">You can&#8217;t wait on daemon threads to complete (they are infinite
+loops).  Instead, you join() on the queue itself.  It waits until all
+the requested tasks are marked as being done.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1004</p>
+<p class="last">Sometimes you need a global variable to communicate between functions.
+Global variables work great for this purpose in a single threaded
+program.  In multi-threaded code, it mutable global state is a
+disaster.  The better solution is to use a threading.local() that is
+global WITHIN a thread but not without.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1005</p>
+<p class="last">Never try to kill a thread from something external to that thread.
+You never know if that thread is holding a lock.
+Python doesn&#8217;t provide a direct mechanism for kill threads
+externally; however, you can do it using <em>ctypes</em>, but that
+is a recipe for a deadlock.</p>
+</div>
+<div class="section" id="applying-all-the-rules">
+<h3>Applying all the rules<a class="headerlink" href="threading.html#applying-all-the-rules" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">queue</span>
+
+<span class="c1">##########################################################################################</span>
+<span class="c1"># Fuzzing is a technique for amplifying race condition errors to make them more visible</span>
+
+<span class="n">FUZZ</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">def</span> <span class="nf">fuzz</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">FUZZ</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">counter_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">counter_manager</span><span class="p">():</span>
+    <span class="s1">&#39;I have EXCLUSIVE rights to update the counter variable&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">increment</span> <span class="o">=</span> <span class="n">counter_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">oldcnt</span> <span class="o">=</span> <span class="n">counter</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="n">oldcnt</span> <span class="o">+</span> <span class="n">increment</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span>
+            <span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">,</span>
+            <span class="s1">&#39;---------------&#39;</span><span class="p">])</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">counter_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">counter_manager</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">t</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">print_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">print_manager</span><span class="p">():</span>
+    <span class="s1">&#39;I have EXCLUSIVE rights to call the &quot;print&quot; keyword&#39;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">job</span> <span class="o">=</span> <span class="n">print_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">job</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">fuzz</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">print_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">print_manager</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">t</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="n">counter_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+
+<span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s1">&#39;Starting up&#39;</span><span class="p">])</span>
+<span class="n">fuzz</span><span class="p">()</span>
+
+<span class="n">worker_threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
+    <span class="n">worker_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">worker_threads</span><span class="p">:</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="n">counter_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">fuzz</span><span class="p">()</span>
+<span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">])</span>
+<span class="n">fuzz</span><span class="p">()</span>
+<span class="n">print_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">fuzz</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cleaned-up-code-without-fuzzing">
+<h2>Cleaned-up code without fuzzing<a class="headerlink" href="threading.html#cleaned-up-code-without-fuzzing" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">queue</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">counter_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">counter_manager</span><span class="p">():</span>
+    <span class="s1">&#39;I have EXCLUSIVE rights to update the counter variable&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">increment</span> <span class="o">=</span> <span class="n">counter_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="n">increment</span>
+        <span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span>
+            <span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">,</span>
+            <span class="s1">&#39;---------------&#39;</span><span class="p">])</span>
+        <span class="n">counter_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">counter_manager</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">t</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">print_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">print_manager</span><span class="p">():</span>
+    <span class="s1">&#39;I have EXCLUSIVE rights to call the &quot;print&quot; keyword&#39;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">job</span> <span class="o">=</span> <span class="n">print_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">job</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">print_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">print_manager</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">t</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="n">counter_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s1">&#39;Starting up&#39;</span><span class="p">])</span>
+<span class="n">worker_threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
+    <span class="n">worker_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">worker_threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="n">counter_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">print_queue</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">])</span>
+<span class="n">print_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="careful-threading-with-locks">
+<h2>Careful Threading with locks<a class="headerlink" href="threading.html#careful-threading-with-locks" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+
+<span class="c1">##########################################################################################</span>
+<span class="c1"># Fuzzing is a technique for amplifying race condition errors to make them more visible</span>
+
+<span class="n">FUZZ</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">def</span> <span class="nf">fuzz</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">FUZZ</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+
+<span class="c1">###########################################################################################</span>
+
+<span class="n">counter_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">printer_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+    <span class="k">with</span> <span class="n">counter_lock</span><span class="p">:</span>
+        <span class="n">oldcnt</span> <span class="o">=</span> <span class="n">counter</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="n">oldcnt</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">fuzz</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="n">fuzz</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">fuzz</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">()</span>
+        <span class="n">fuzz</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">()</span>
+<span class="n">fuzz</span><span class="p">()</span>
+
+<span class="n">worker_threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
+    <span class="n">worker_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">worker_threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">fuzz</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="n">fuzz</span><span class="p">()</span>
+
+</pre></div>
+</div>
+<p>Let&#8217;s see how well the runs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Starting</span> <span class="n">up</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">1</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">2</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">3</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">4</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">5</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">6</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">7</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">8</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">9</span>
+<span class="o">---------------</span>
+<span class="n">The</span> <span class="n">count</span> <span class="ow">is</span> <span class="mi">10</span>
+<span class="o">---------------</span>
+<span class="n">Finishing</span> <span class="n">up</span>
+</pre></div>
+</div>
+<p>It is perfect!</p>
+</div>
+<div class="section" id="id1">
+<h2>Cleaned-up code without fuzzing<a class="headerlink" href="threading.html#id1" title="Permalink to this headline">¶</a></h2>
+<p>Now, let&#8217;s clean it up:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+
+<span class="n">counter_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">printer_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+    <span class="s1">&#39;My job is to increment the counter and print the current count&#39;</span>
+    <span class="k">global</span> <span class="n">counter</span>
+    <span class="k">with</span> <span class="n">counter_lock</span><span class="p">:</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+
+<span class="n">worker_threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
+    <span class="n">worker_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">worker_threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">printer_lock</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Results:</p>
+<ul class="simple">
+<li>It is perfect!</li>
+<li>It is beautiful.</li>
+<li>It is simpler than using queues.</li>
+</ul>
+</div>
+<div class="section" id="notes-on-locks">
+<h2>Notes on Locks<a class="headerlink" href="threading.html#notes-on-locks" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1005</p>
+<p class="last">Locks don&#8217;t lock anything.  They are just flags and can be ignored.
+It is a cooperative tool, not an enforced tool.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1006</p>
+<p class="last">In general, locks should be considered a low level primitive
+that is difficult to reason about in non-trivial examples.
+For more complex applications, you&#8217;re almost always better off
+with using atomic message queues.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>RR 1007</p>
+<p class="last">The more locks you are acquire at one time, the more you lose
+the advantages of concurrency.</p>
+</div>
+</div>
+<div class="section" id="dining-philosophers">
+<h2>Dining Philosophers<a class="headerlink" href="threading.html#dining-philosophers" title="Permalink to this headline">¶</a></h2>
+<p>The rules given above help you reliably create multi-threaded code
+is the underlying data flow is a DAG (directed acyclic graph).</p>
+<p>When the control flow or data flow is circular, the problem
+can be much harder.  At that point, more formal design and
+verification techniques are warranted.  Otherwise, it can
+be quite difficult in complex applications to avoid deadlock,
+have thread starvation, or to have unfair solutions.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="process.html" class="btn btn-neutral float-right" title="Multi-processing Example" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="simple_examples.html" class="btn btn-neutral" title="Two Simple Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Raymond Hettinger.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

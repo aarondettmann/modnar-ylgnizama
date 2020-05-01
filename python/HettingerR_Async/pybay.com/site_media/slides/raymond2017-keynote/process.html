@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Multi-processing Example &mdash; PyBay 2017 Keynote  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyBay 2017 Keynote  documentation" href="index.html"/>
+        <link rel="next" title="Combining Threading and Forking" href="combo.html"/>
+        <link rel="prev" title="Threading Example" href="threading.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyBay 2017 Keynote
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                August 12, 2017
+              </div>
+            
+          
+
+          
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple_examples.html">Two Simple Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="threading.html">Threading Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="process.html#">Multi-processing Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="process.html#scripting-style">Scripting style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#function-style">Function style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#what-is-parallelizeable">What is parallelizeable?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#pools-of-processes">Pools of processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#hazards-of-thin-channel-communication-sql-version">Hazards of thin channel communication (SQL Version)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#performance-hazards-for-multi-processing">Performance hazards for multi-processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process.html#other-multi-processing-notes">Other Multi-processing notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="combo.html">Combining Threading and Forking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async_examples.html">Async Example</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyBay 2017 Keynote</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Multi-processing Example</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="multi-processing-example">
+<h1>Multi-processing Example<a class="headerlink" href="process.html#multi-processing-example" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="scripting-style">
+<h2>Scripting style<a class="headerlink" href="process.html#scripting-style" title="Permalink to this headline">¶</a></h2>
+<p>Start with working code that is clear, simple, and runs top to bottom.
+This is easy to develop and test incrementally.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;https://www.yahoo.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnn.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.python.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.jython.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.pypy.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.perl.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cisco.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.facebook.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.twitter.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.macrumors.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://arstechnica.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.reuters.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://abcnews.go.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnbc.com/&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">page</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="function-style">
+<h2>Function style<a class="headerlink" href="process.html#function-style" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;https://www.yahoo.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnn.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.python.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.jython.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.pypy.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.perl.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cisco.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.facebook.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.twitter.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.macrumors.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://arstechnica.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.reuters.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://abcnews.go.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnbc.com/&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Determine the size of a website &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">sitesize</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A good development strategy is to use <em>map</em> to test
+the code in a single process and single thread mode before
+switching to multi-processing.</p>
+</div>
+</div>
+<div class="section" id="what-is-parallelizeable">
+<h2>What is parallelizeable?<a class="headerlink" href="process.html#what-is-parallelizeable" title="Permalink to this headline">¶</a></h2>
+<p>A key pattern of thinking is to divide the world into to
+&#8220;lawn mowing&#8221; versus &#8220;baby making&#8221; &#8211; identifying tasks
+that are significantly parallelizeable versus those that
+are intrinsically serial.</p>
+<p>Amdahl&#8217;s Law (according to wikipedia):</p>
+<blockquote>
+<div>Amdahl&#8217;s law is often used in parallel computing to predict the
+theoretical speedup when using multiple processors. For example,
+if a program needs 20 hours using a single processor core, and a
+particular part of the program which takes one hour to execute
+cannot be parallelized, while the remaining 19 hours (p = 0.95)
+of execution time can be parallelized, then regardless of how
+many processors are devoted to a parallelized execution of this
+program, the minimum execution time cannot be less than that
+critical one hour. Hence, the theoretical speedup is limited to
+at most 20 times <code class="docutils literal"><span class="pre">(1/(1</span> <span class="pre">−</span> <span class="pre">p)</span> <span class="pre">=</span> <span class="pre">20)</span></code>. For this reason parallel
+computing is relevant only for a low number of processors and
+very parallelizable programs.</div></blockquote>
+<p>Detailed example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Determine the size of a website</span>
+
+<span class="sd">    This is non-parallizeable:</span>
+<span class="sd">    * UDP DNS request for the url</span>
+<span class="sd">    * UDP DNS response</span>
+<span class="sd">    * Acquire socket from the OS</span>
+<span class="sd">    * TCP Connection:  SYN, ACK, SYN/ACK</span>
+<span class="sd">    * Send HTTP Request for the root resource</span>
+<span class="sd">    * Wait for the TCP response which is broken-up</span>
+<span class="sd">      into packets.</span>
+<span class="sd">    * Count the characters of the webpage</span>
+
+<span class="sd">    This is a bit parallizeable:</span>
+<span class="sd">    Do ten times in parallel (channel bonding):</span>
+<span class="sd">        1) DNS lookup (UDP request and resp)</span>
+<span class="sd">        1) Acquire the socket</span>
+<span class="sd">        2) Send HTTP range requests</span>
+<span class="sd">        3) The sections comes back in parallel</span>
+<span class="sd">           across different pieces of fiber.</span>
+<span class="sd">           http://stackoverflow.com/questions/8293687/sample-http-range-request-session</span>
+<span class="sd">        4) Count the characters for a single</span>
+<span class="sd">           block as received.</span>
+<span class="sd">    Add up the 10 results!</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pools-of-processes">
+<h2>Pools of processes<a class="headerlink" href="process.html#pools-of-processes" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.pool</span> <span class="k">import</span> <span class="n">ThreadPool</span> <span class="k">as</span> <span class="n">Pool</span>
+<span class="c1"># from multiprocessing.pool import Pool</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;https://www.yahoo.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnn.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.python.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.jython.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.pypy.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.perl.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cisco.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.facebook.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.twitter.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.macrumors.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://arstechnica.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.reuters.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://abcnews.go.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnbc.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnbc.com/&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Determine the size of a website &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+<span class="n">pool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">sitesize</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <code class="docutils literal"><span class="pre">imap_unordered</span></code> is used to improve responsiveness.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The use of <code class="docutils literal"><span class="pre">imap_unordered</span></code> is made possible by
+designing the function to return both its argument and its
+result as a tuple.</p>
+</div>
+</div>
+<div class="section" id="hazards-of-thin-channel-communication-sql-version">
+<h2>Hazards of thin channel communication (SQL Version)<a class="headerlink" href="process.html#hazards-of-thin-channel-communication-sql-version" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Don&#8217;t make too many trips back and forth</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Do significant work on each trip</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Don&#8217;t send or receive a lot of data</p>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">###########################################################################################</span>
+<span class="c1"># Bringing too much back and not doing enough work while you are there</span>
+
+<span class="n">summary</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">employee</span><span class="p">,</span> <span class="n">dept</span><span class="p">,</span> <span class="n">salary</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT employee, dept, salary FROM Employee&#39;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">[</span><span class="n">dept</span><span class="p">]</span> <span class="o">+=</span> <span class="n">salary</span>
+
+
+<span class="c1">###########################################################################################</span>
+<span class="c1"># Too many trips back and forth</span>
+
+<span class="n">summary</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">dept</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT DISTINCT dept FROM Employee&#39;</span><span class="p">):</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT SUM(salary) FROM Employee&#39;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">[</span><span class="n">dept</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="c1">###########################################################################################</span>
+<span class="c1"># Right way is one trip with where a lot of work gets done and only a summary result in returned</span>
+
+<span class="n">summary</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT dept, SUM(salary) FROM Employee GROUPBY dept&#39;</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="performance-hazards-for-multi-processing">
+<h2>Performance hazards for multi-processing<a class="headerlink" href="process.html#performance-hazards-for-multi-processing" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">###########################################################################################</span>
+<span class="c1"># Too many trips back and forth</span>
+<span class="c1"># If the input iterable to map is very large, it suggests you&#39;re making too many trips</span>
+
+<span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">()</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Range:</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span><span class="o">+</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+
+<span class="c1">###########################################################################################</span>
+<span class="c1"># Not doing enough work relative to the travel time</span>
+<span class="c1"># Once you get to a process, be sure to do enough work to make the trip worthwhile</span>
+
+<span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">u</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)))</span>
+
+
+<span class="c1">###########################################################################################</span>
+<span class="c1"># Taking too much with you or bringing too much back</span>
+
+<span class="k">def</span> <span class="nf">sitesize</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">page</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-multi-processing-notes">
+<h2>Other Multi-processing notes<a class="headerlink" href="process.html#other-multi-processing-notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Never run a multi-processing example from within an IDE
+that runs in the same process as the code you are developing.
+Otherwise, the forking step will fork the IDE itself as well
+as your code.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When partitioning into subtasks, a common challenge
+is how to handle data at the boundaries of the partition.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Setting the number of processes is a bit of an art.
+If the code is CPU bound, the number of cores times two
+is a reasonable starting point.  If the code is IO bound,
+the number of cores can be much higher.  Experimentation
+is the key.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="combo.html" class="btn btn-neutral float-right" title="Combining Threading and Forking" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="threading.html" class="btn btn-neutral" title="Threading Example" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Raymond Hettinger.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Combining Threading and Forking &mdash; PyBay 2017 Keynote  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyBay 2017 Keynote  documentation" href="index.html"/>
+        <link rel="next" title="Async Example" href="async_examples.html"/>
+        <link rel="prev" title="Multi-processing Example" href="process.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyBay 2017 Keynote
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                August 12, 2017
+              </div>
+            
+          
+
+          
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple_examples.html">Two Simple Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="threading.html">Threading Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">Multi-processing Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="combo.html#">Combining Threading and Forking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="combo.html#general-comments">General Comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="combo.html#recipe-for-deadlocks">Recipe for Deadlocks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="async_examples.html">Async Example</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyBay 2017 Keynote</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Combining Threading and Forking</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="combining-threading-and-forking">
+<h1>Combining Threading and Forking<a class="headerlink" href="combo.html#combining-threading-and-forking" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general-comments">
+<h2>General Comments<a class="headerlink" href="combo.html#general-comments" title="Permalink to this headline">¶</a></h2>
+<p>There are those who believe that if you mix threading and forking
+that you are living in a state of sin and deserve whatever
+happens to you.</p>
+</div>
+<div class="section" id="recipe-for-deadlocks">
+<h2>Recipe for Deadlocks<a class="headerlink" href="combo.html#recipe-for-deadlocks" title="Permalink to this headline">¶</a></h2>
+<p>This code was submitted to the bug tracker last year in
+<a class="reference external" href="http://bugs.python.org/issue27422">http://bugs.python.org/issue27422</a> :</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># coding:utf8</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="k">import</span> <span class="n">ThreadPoolExecutor</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;starting </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">arg</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="nb">print</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="n">arg</span><span class="p">))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;finished </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">arg</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">tests</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">tests</span><span class="p">):</span>
+            <span class="k">pass</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The general rule is &#8220;thread after you fork not before&#8221;.
+Otherwise, the locks used by the thread executor will get
+duplicated across processes.  If one of those processes dies
+while it has the lock, all of the other processes using that
+lock will deadlock.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="async_examples.html" class="btn btn-neutral float-right" title="Async Example" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="process.html" class="btn btn-neutral" title="Multi-processing Example" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Raymond Hettinger.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

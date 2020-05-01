@@ -1,0 +1,236 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Two Simple Examples &mdash; PyBay 2017 Keynote  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyBay 2017 Keynote  documentation" href="index.html"/>
+        <link rel="next" title="Threading Example" href="threading.html"/>
+        <link rel="prev" title="Introduction" href="intro.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyBay 2017 Keynote
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                August 12, 2017
+              </div>
+            
+          
+
+          
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="simple_examples.html#">Two Simple Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="threading.html">Threading Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">Multi-processing Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="combo.html">Combining Threading and Forking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async_examples.html">Async Example</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyBay 2017 Keynote</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Two Simple Examples</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="two-simple-examples">
+<h1>Two Simple Examples<a class="headerlink" href="simple_examples.html#two-simple-examples" title="Permalink to this headline">¶</a></h1>
+<p>Updating and printing a counter:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting up&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The count is </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">counter</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finishing up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Displaying the homepage sizes for multiple websites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;https://www.yahoo.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnn.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.python.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.jython.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.pypy.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.perl.org&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cisco.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.facebook.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.twitter.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.macrumors.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://arstechnica.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.reuters.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://abcnews.go.com/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;http://www.cnbc.com/&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">page</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="threading.html" class="btn btn-neutral float-right" title="Threading Example" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="intro.html" class="btn btn-neutral" title="Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Raymond Hettinger.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
